@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package maumaugame;
 
 import javax.swing.*;
@@ -308,6 +303,7 @@ public class GameClient extends JFrame
             handPanel.add(cards.get(i));
             cards.get(i).addActionListener(obsluga);
             cards.get(i).setEnabled(false);
+            cards.get(i).setPreferredSize(new Dimension(80, 108));
             handPanel.revalidate();
             validate();
         }
