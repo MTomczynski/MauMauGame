@@ -8,7 +8,6 @@ import java.rmi.registry.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.border.EmptyBorder;
 
 public class GameClient extends JFrame
 {
@@ -58,7 +57,7 @@ public class GameClient extends JFrame
         host = new JTextField(nazwaSerwera, 12);
         polacz = new JButton("Połącz");
         rozlacz = new JButton("Rozłącz");
-        endTurn = new JButton("End turn");
+        endTurn = new JButton("Zakoncz ture");
         rozlacz.setEnabled(false);
 
         listaZalogowanych = new DefaultListModel<String>();
@@ -116,7 +115,7 @@ public class GameClient extends JFrame
             Object src = e.getSource();
             if (e.getActionCommand().equals("Połącz"))
             {
-                wyswietlKomunikat("Łączę z: " + nazwaSerwera + "...");
+                wyswietlKomunikat("Lacze z: " + nazwaSerwera + "...");
                 polacz.setEnabled(false);
                 rozlacz.setEnabled(true);
                 host.setEnabled(false);
@@ -137,7 +136,7 @@ public class GameClient extends JFrame
                 polacz.setEnabled(true);
                 host.setEnabled(true);
             }
-            if (e.getActionCommand().equals("End turn"))
+            if (e.getActionCommand().equals("Zakoncz ture"))
             {
                 try
                 {
@@ -234,12 +233,21 @@ public class GameClient extends JFrame
         Card currCard = serwer.getCurrentCard();
         switch (currCard.getValue())
         {
+            case 1:
+                serwer.setFunctionApplied(true);
+                break;
             case 2:
                 serwer.drawACard(klient, 2);
                 serwer.setFunctionApplied(true);
                 break;
             case 3:
                 serwer.drawACard(klient, 3);
+                serwer.setFunctionApplied(true);
+                break;
+            case 4:
+                serwer.setFunctionApplied(true);
+                break;
+            case 11:
                 serwer.setFunctionApplied(true);
                 break;
             case 13:
@@ -257,9 +265,17 @@ public class GameClient extends JFrame
         Card currCard = serwer.getCurrentCard();
         int playingCard = c.getValue();
         int tableCard = currCard.getValue();
-        if (currCard.getValue() == c.getValue())
+        if (tableCard == playingCard)
         {
             return true;
+        }
+
+        if (serwer.getFunctionApplied())
+        {
+            if (playingCard == tableCard || c.getSuit() == currCard.getSuit())
+            {
+                return true;
+            }
         }
 
         if (tableCard == 1 || tableCard == 2 || tableCard == 3
@@ -273,7 +289,6 @@ public class GameClient extends JFrame
                 return false;
             }
         }
-
         if (c.getSuit() == currCard.getSuit()
                 || tableCard == 12
                 || playingCard == 12)
@@ -372,7 +387,7 @@ public class GameClient extends JFrame
                 if (n.getTurn())
                 {
                     listaZalogowanych.addElement(n.pobierzNicka() + " - THINKING..");
-                } else if(!n.getTurn())
+                } else if (!n.getTurn())
                 {
                     listaZalogowanych.addElement(n.pobierzNicka());
                 }
