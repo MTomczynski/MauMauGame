@@ -6,6 +6,7 @@
 package maumaugame;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -34,11 +35,25 @@ public class Hand
         }
         hand.add(c);
     }
+    
+    public void addCard(ArrayList<Card> c)
+    {
+        hand.addAll(c);
+    }
 
     public void removeCard(Card c)
     {
         hand.remove(c);
     }
+    
+//    public void handAsString()
+//    {
+//        for(int i = 0; i < hand.size(); i++)
+//        {
+//            hand.get(i).getValueAsString();
+//            hand.get(i).ge
+//        }
+//    }
 
     public void removeCard(int position)
     {

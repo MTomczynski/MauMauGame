@@ -5,11 +5,9 @@
  */
 package maumaugame;
 
-/**
- *
- * @author M
- */
-public class Card
+import java.io.Serializable;
+
+public class Card implements Serializable
 {
 
     public final static int SPADES = 0;   // Codes for the 4 suits, plus Joker.
@@ -76,6 +74,27 @@ public class Card
                 return "Clubs";
             default:
                 return "Joker";
+        }
+    }
+    
+    public String getSuitAsStringShort()
+    {
+        switch (suit)
+        {
+            //Pik
+            case SPADES:
+                return "s";
+            //Kier
+            case HEARTS:
+                return "h";
+            //Karo
+            case DIAMONDS:
+                return "d";
+            //Trefl
+            case CLUBS:
+                return "c";
+            default:
+                return "j";
         }
     }
 

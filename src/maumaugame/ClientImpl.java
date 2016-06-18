@@ -16,6 +16,7 @@ public class ClientImpl extends UnicastRemoteObject implements Client
 
     private GameClient klient;
     private String nick;
+    
 
     public ClientImpl(GameClient klient, String nick) throws RemoteException
     {
@@ -49,4 +50,32 @@ public class ClientImpl extends UnicastRemoteObject implements Client
     {
         this.nick = nick;
     }
+
+    public void drawACard(Card c) throws RemoteException
+    {
+        klient.hand.addCard(c);
+    }
+    
+    public void drawACard(Card c, int quantity) throws RemoteException
+    {
+        klient.hand.addCard(c);
+    }
+
+    public void changeTurn(boolean d) throws RemoteException
+    {
+        klient.myTurn = d;
+    }
+
+    public boolean getTurn() throws RemoteException
+    {
+        return klient.myTurn;
+    }
+
+    public void tableRefresh() throws RemoteException
+    {
+        klient.currentCardRefresh();
+        klient.handRefresh();
+    }
+    
+    
 }

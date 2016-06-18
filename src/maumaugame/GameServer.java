@@ -10,23 +10,26 @@ import java.awt.*;
 import java.awt.event.*;
 import java.rmi.registry.*;
 
-public class GameServer extends JFrame {
+public class GameServer extends JFrame
+{
 
     //GUI
-    private JButton uruchom, zatrzymaj;
+    private JButton uruchom, zatrzymaj, deckInfo;
     private JPanel panel;
     private JTextField port;
     private JTextArea komunikaty;
     //Serwer
     private int numerPortu = 1099;
     GameServer instancjaSerwera;
-    
+
     //Variables for the game
-    static Deck deck = new Deck();
+    public static Deck deck = new Deck();
     public Card currentCard;
+    public Hand hand;
     static int multiFactor;
 
-    public GameServer() {
+    public GameServer()
+    {
         super("Serwer");
 
         instancjaSerwera = this;
@@ -43,17 +46,20 @@ public class GameServer extends JFrame {
         port = new JTextField((new Integer(numerPortu)).toString(), 8);
         uruchom = new JButton("Uruchom");
         zatrzymaj = new JButton("Zatrzymaj");
+        deckInfo = new JButton("Deck");
         zatrzymaj.setEnabled(false);
 
         ObslugaZdarzen obsluga = new ObslugaZdarzen();
 
         uruchom.addActionListener(obsluga);
         zatrzymaj.addActionListener(obsluga);
+        deckInfo.addActionListener(obsluga);
 
         panel.add(new JLabel("Port RMI: "));
         panel.add(port);
         panel.add(uruchom);
         panel.add(zatrzymaj);
+        panel.add(deckInfo);
 
         add(panel, BorderLayout.NORTH);
         add(new JScrollPane(komunikaty), BorderLayout.CENTER);
@@ -61,12 +67,15 @@ public class GameServer extends JFrame {
         setVisible(true);
     }
 
-    private class ObslugaZdarzen implements ActionListener {
+    private class ObslugaZdarzen implements ActionListener
+    {
 
         private Serwer srw;
 
-        public void actionPerformed(ActionEvent e) {
-            if (e.getActionCommand().equals("Uruchom")) {
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getActionCommand().equals("Uruchom"))
+            {
                 srw = new Serwer();
                 srw.start();
                 uruchom.setEnabled(false);
@@ -74,60 +83,87 @@ public class GameServer extends JFrame {
                 port.setEnabled(false);
                 repaint();
             }
-            if (e.getActionCommand().equals("Zatrzymaj")) {
+            if (e.getActionCommand().equals("Zatrzymaj"))
+            {
                 srw.kill();
                 zatrzymaj.setEnabled(false);
                 uruchom.setEnabled(true);
                 port.setEnabled(true);
                 repaint();
             }
+            if (e.getActionCommand().equals("Deck"))
+            {
+                for (Card c : deck.deck)
+                {
+                    wyswietlKomunikat(c.getSuitAsString() + " "
+                            + c.getValueAsString());
+                }
+                repaint();
+            }
         }
     }
 
-    private class Serwer extends Thread {
+    private class Serwer extends Thread
+    {
 
         Registry rejestr;
 
-        public void kill() {
-            try {
+        public void kill()
+        {
+            try
+            {
                 rejestr.unbind("RMICzat");
                 wyswietlKomunikat("Serwer został‚ wyrejestrowany.");
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 wyswietlKomunikat("Nie udało się wyrejestrować serwera.");
             }
         }
 
-        public void run() {
+        public void run()
+        {
 
-            try {
+            try
+            {
                 rejestr = LocateRegistry.createRegistry(new Integer(port.getText()));
                 wyswietlKomunikat("Utworzyłem nowy rejestr na porcie: " + port.getText());
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 wyswietlKomunikat("Nie powiodło sie utworzenie rejestru...\nPróba skorzystania z istniejącego...");
             }
-            if (rejestr == null) {
-                try {
+            if (rejestr == null)
+            {
+                try
+                {
                     rejestr = LocateRegistry.getRegistry();
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     wyswietlKomunikat("Brak uruchomionego rejestru.");
                 }
             }
-            try {
+            try
+            {
                 GameImpl serwer = new GameImpl(instancjaSerwera);
                 rejestr.rebind("RMICzat", serwer);
                 wyswietlKomunikat("Serwer został‚ poprawnie zarejestrowany i uruchomiony.");
-            } catch (Exception e) {
+                deck.shuffleAll();
+                currentCard = deck.deck.get(0);
+                deck.deck.remove(0);
+            } catch (Exception e)
+            {
                 wyswietlKomunikat("Nie udało się zarejestrować i uruchomić serwera.");
             }
         }
     }
 
-    public void wyswietlKomunikat(String tekst) {
+    public void wyswietlKomunikat(String tekst)
+    {
         komunikaty.append(tekst + "\n");
         komunikaty.setCaretPosition(komunikaty.getDocument().getLength());
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         new GameServer();
     }
 }
