@@ -8,20 +8,18 @@ package maumaugame;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 public class GameClient extends JFrame
 {
 
     //GUI
-    private JButton polacz, rozlacz, info, endTurn, handRefreshButton;
-    private JButton[] cards = new JButton[30];
+    private JButton polacz, rozlacz, info, endTurn;
+    ArrayList<JButton> cards = new ArrayList<>();
     private JPanel container, panel, handPanel, currentCardPanel;
     private JTextField host, wiadomosc;
     private JTextArea komunikaty;
@@ -40,6 +38,7 @@ public class GameClient extends JFrame
 
     public GameClient()
     {
+
         super("Klient");
 
         instancjaKlienta = this;
@@ -70,7 +69,6 @@ public class GameClient extends JFrame
         rozlacz = new JButton("Rozłącz");
         info = new JButton("Info");
         endTurn = new JButton("End turn");
-        handRefreshButton = new JButton("Hand");
         rozlacz.setEnabled(false);
 
         listaZalogowanych = new DefaultListModel<String>();
@@ -83,7 +81,6 @@ public class GameClient extends JFrame
         rozlacz.addActionListener(obsluga);
         info.addActionListener(obsluga);
         endTurn.addActionListener(obsluga);
-        handRefreshButton.addActionListener(obsluga);
 
         wiadomosc.addKeyListener(obsluga);
 
@@ -108,7 +105,6 @@ public class GameClient extends JFrame
         panel.add(rozlacz);
         panel.add(info);
         panel.add(endTurn);
-        panel.add(handRefreshButton);
 
         add(panel, BorderLayout.NORTH);
 
@@ -166,34 +162,37 @@ public class GameClient extends JFrame
             {
                 try
                 {
-                    serwer.changeTurn(klient);
-                } catch (RemoteException ex)
-                {
-                    Logger.getLogger(GameClient.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            if (e.getActionCommand().equals("Hand"))
-            {
-
-                try
-                {
+                    applyFunction();
                     handRefresh();
+                    serwer.changeTurn(klient);
+                    myTurn = false;
+                    currentCardRefresh();
+                    handRulesRefresh();
                 } catch (RemoteException ex)
                 {
                     Logger.getLogger(GameClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
             }
-            for (int i = 0; i < cards.length; i++)
+
+            for (int i = 0; i < cards.size(); i++)
             {
-                if (src == cards[i])
+                if (src == cards.get(i))
                 {
 
                     try
                     {
+                        if (serwer.getFunctionApplied())
+                        {
+                            serwer.setFunctionApplied(false);
+                        }
                         serwer.playACard(klient, hand.getCard(i));
                         hand.removeCard(i);
                         handRefresh();
+                        serwer.changeTurn(klient);
+                        myTurn = false;
+                        currentCardRefresh();
+                        handRulesRefresh();
+
                     } catch (RemoteException ex)
                     {
                         Logger.getLogger(GameClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -235,6 +234,7 @@ public class GameClient extends JFrame
                 serwer.drawACard(klient, 5);
                 handRefresh();
                 currentCardRefresh();
+                handRulesRefresh();
             } catch (Exception e)
             {
                 System.out.println("Błąd połączenia: " + e);
@@ -242,13 +242,66 @@ public class GameClient extends JFrame
         }
     }
 
+    private void applyFunction() throws RemoteException
+    {
+        if (serwer.getFunctionApplied())
+        {
+            serwer.drawACard(klient);
+            return;
+        }
+
+        Card currCard = serwer.getCurrentCard();
+        switch (currCard.getValue())
+        {
+            case 1:
+                serwer.drawACard(klient);
+                break;
+            case 2:
+                serwer.drawACard(klient, 2);
+                serwer.setFunctionApplied(true);
+                break;
+            case 3:
+                serwer.drawACard(klient, 3);
+                serwer.setFunctionApplied(true);
+                break;
+            case 11:
+                //input which value u demand for the whole round
+                break;
+            case 13:
+                serwer.drawACard(klient, 5);
+                serwer.setFunctionApplied(true);
+                break;
+            default:
+                serwer.drawACard(klient);
+                break;
+        }
+    }
+
     private boolean cardRules(Card c) throws RemoteException
     {
         Card currCard = serwer.getCurrentCard();
-        if (c.getSuit() == currCard.getSuit() || c.getValue() == currCard.getValue())
+        int playingCard = c.getValue();
+        int tableCard = currCard.getValue();
+        if (currCard.getValue() == c.getValue())
         {
             return true;
-        } else if (c.getValue() == 12)
+        }
+
+        if (tableCard == 1 || tableCard == 2 || tableCard == 3
+                || tableCard == 4 || tableCard == 11 || tableCard == 13)
+        {
+            if (playingCard == tableCard)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+
+        if (c.getSuit() == currCard.getSuit()
+                || tableCard == 12
+                || playingCard == 12)
         {
             return true;
         }
@@ -264,52 +317,51 @@ public class GameClient extends JFrame
     public void handRefresh() throws RemoteException
     {
         handPanel.removeAll();
+        cards.removeAll(cards);
         obsluga = new ObslugaZdarzen();
         for (int i = 0; i < hand.getCardCount(); i++)
         {
             ImageIcon icon = createImageIcon("CardsRes/" + hand.getCard(i).getValueAsString()
                     + "" + hand.getCard(i).getSuitAsStringShort()
                     + ".jpg");
-            cards[i] = new JButton(icon);
-            handPanel.add(cards[i]);
-            cards[i].addActionListener(obsluga);
+            cards.add(new JButton(icon));
+            handPanel.add(cards.get(i));
+            cards.get(i).addActionListener(obsluga);
+            cards.get(i).setEnabled(false);
+            handPanel.revalidate();
+            validate();
+        }
+    }
 
+    public void handRulesRefresh() throws RemoteException
+    {
+        for (int i = 0; i < hand.getCardCount(); i++)
+        {
             if (myTurn)
             {
                 if (!cardRules(hand.getCard(i)))
                 {
-                    cards[i].setEnabled(false);
+                    cards.get(i).setEnabled(false);
                 } else
                 {
-                    cards[i].setEnabled(true);
+                    cards.get(i).setEnabled(true);
                 }
+                endTurn.setEnabled(true);
             }
-
-            handPanel.revalidate();
-            validate();
         }
+        if (!myTurn)
+        {
 
-//        if (!myTurn)
-//        {
-//            for (JButton b : cards)
-//            {
-//                b.setEnabled(false);
-//            }
-//            endTurn.setEnabled(false);
-//        } else if (myTurn)
-//        {
-//            for (int i = 0; i < hand.getCardCount(); i++)
-//            {
-//
-//                if (!cardRules(hand.getCard(i)))
-//                {
-//                    cards[i].setEnabled(false);
-//                } else
-//                {
-//                    cards[i].setEnabled(true);
-//                }
-//            }
-//        }
+            endTurn.setEnabled(false);
+            for (JButton j : cards)
+            {
+                if (j == null)
+                {
+                    return;
+                }
+                j.setEnabled(false);
+            }
+        }
     }
 
     protected static ImageIcon createImageIcon(String path)
@@ -337,9 +389,6 @@ public class GameClient extends JFrame
     {
 
         listaZalogowanych.clear();
-        Card c;
-        c = serwer.getCurrentCard();
-        listaZalogowanych.addElement(c.getValueAsString() + " " + c.getSuitAsString());
         for (Client n : lista)
         {
             try

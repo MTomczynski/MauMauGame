@@ -26,4 +26,8 @@ public interface Game extends Remote {
     public void changeTurn(Client k) throws RemoteException;
     
     public Card getCurrentCard() throws RemoteException;
+    
+    public boolean getFunctionApplied() throws RemoteException;
+    
+    public void setFunctionApplied(boolean b) throws RemoteException;
 }

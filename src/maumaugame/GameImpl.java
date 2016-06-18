@@ -68,8 +68,13 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
         serwer.currentCard = c;
         for (Iterator<Client> i = klienci.iterator(); i.hasNext();)
         {
+
             Client klient = i.next();
-            klient.tableRefresh();
+            if (!klient.equals(n))
+            {
+                klient.tableRefresh();
+            }
+
         }
     }
 
@@ -100,7 +105,7 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
             if (pass && !klient.equals(n))
             {
                 klient.changeTurn(true);
-                n.changeTurn(false);
+                klient.tableRefresh();
                 return;
             }
 
@@ -110,12 +115,21 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
             }
         }
         klienci.elementAt(0).changeTurn(true);
-        n.changeTurn(false);
+        klienci.elementAt(0).tableRefresh();
     }
-
-    @Override
     public Card getCurrentCard() throws RemoteException
     {
         return serwer.currentCard;
+    }
+
+    public boolean getFunctionApplied() throws RemoteException
+    {
+        return serwer.functionApplied;
+    }
+
+    @Override
+    public void setFunctionApplied(boolean b) throws RemoteException
+    {
+        serwer.functionApplied = b;
     }
 }

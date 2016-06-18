@@ -20,12 +20,12 @@ public interface Client extends Remote
     public String pobierzNicka() throws RemoteException;
 
     public void ustawNicka(String nick) throws RemoteException;
-    
+
     public void drawACard(Card c) throws RemoteException;
-    
+
     public void changeTurn(boolean d) throws RemoteException;
-    
+
     public boolean getTurn() throws RemoteException;
-    
+
     public void tableRefresh() throws RemoteException;
 }

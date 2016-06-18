@@ -26,7 +26,9 @@ public class GameServer extends JFrame
     public static Deck deck = new Deck();
     public Card currentCard;
     public Hand hand;
-    static int multiFactor;
+    public int multiFactor;
+    public int aceColorDemand;
+    public boolean functionApplied = false;
 
     public GameServer()
     {
@@ -147,8 +149,18 @@ public class GameServer extends JFrame
                 rejestr.rebind("RMICzat", serwer);
                 wyswietlKomunikat("Serwer został‚ poprawnie zarejestrowany i uruchomiony.");
                 deck.shuffleAll();
-                currentCard = deck.deck.get(0);
-                deck.deck.remove(0);
+                for (Card c : deck.deck)
+                {
+                    if (c.getValue() != 1 && c.getValue() != 2
+                            && c.getValue() != 3 && c.getValue() != 4
+                            && c.getValue() != 11 && c.getValue() != 12
+                            && c.getValue() != 13)
+                    {
+                        currentCard = c;
+                        deck.removeACard(c);
+                        break;
+                    }
+                }
             } catch (Exception e)
             {
                 wyswietlKomunikat("Nie udało się zarejestrować i uruchomić serwera.");

@@ -75,7 +75,6 @@ public class ClientImpl extends UnicastRemoteObject implements Client
     {
         klient.currentCardRefresh();
         klient.handRefresh();
+        klient.handRulesRefresh();
     }
-    
-    
 }
