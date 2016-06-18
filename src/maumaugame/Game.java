@@ -30,4 +30,6 @@ public interface Game extends Remote {
     public boolean getFunctionApplied() throws RemoteException;
     
     public void setFunctionApplied(boolean b) throws RemoteException;
+    
+    public void listRefresh(Client k) throws RemoteException;
 }

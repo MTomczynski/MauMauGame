@@ -26,7 +26,7 @@ public class ClientImpl extends UnicastRemoteObject implements Client
 
     public void wiadomoscPowitalna(String nick, Vector<Client> lista) throws RemoteException
     {
-        klient.wyswietlKomunikat("Do czatu dołączył/a: " + nick);
+        klient.wyswietlKomunikat("Do gry dołączył/a: " + nick);
         klient.odswiezListe(lista);
     }
 
@@ -37,7 +37,7 @@ public class ClientImpl extends UnicastRemoteObject implements Client
 
     public void wiadomoscKonczaca(String nick, Vector<Client> lista) throws RemoteException
     {
-        klient.wyswietlKomunikat("Czat opuścił/a: " + nick);
+        klient.wyswietlKomunikat("Grę opuścił/a: " + nick);
         klient.odswiezListe(lista);
     }
 
@@ -76,5 +76,10 @@ public class ClientImpl extends UnicastRemoteObject implements Client
         klient.currentCardRefresh();
         klient.handRefresh();
         klient.handRulesRefresh();
+    }
+
+    public void listRefresh(Vector<Client> lista) throws RemoteException
+    {
+        klient.odswiezListe(lista);
     }
 }

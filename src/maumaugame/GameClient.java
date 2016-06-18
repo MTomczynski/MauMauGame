@@ -13,14 +13,15 @@ import java.rmi.registry.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.border.EmptyBorder;
 
 public class GameClient extends JFrame
 {
 
     //GUI
-    private JButton polacz, rozlacz, info, endTurn;
+    private JButton polacz, rozlacz, endTurn;
     ArrayList<JButton> cards = new ArrayList<>();
-    private JPanel container, panel, handPanel, currentCardPanel;
+    private JPanel panel, handPanel, currentCardPanel;
     private JTextField host, wiadomosc;
     private JTextArea komunikaty;
     private JList<String> zalogowani;
@@ -43,20 +44,15 @@ public class GameClient extends JFrame
 
         instancjaKlienta = this;
 
-        setSize(700, 600);
+        setSize(900, 600);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
 
-        container = new JPanel();
-//        panel = new JPanel(new FlowLayout());
-//        handPanel = new JPanel(new FlowLayout());
-//        currentCardPanel = new JPanel(new FlowLayout());
-        container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
-        panel = new JPanel();
-        handPanel = new JPanel();
-        currentCardPanel = new JPanel();
+        panel = new JPanel(new FlowLayout());
+        handPanel = new JPanel(new FlowLayout());
+        currentCardPanel = new JPanel(new FlowLayout());
 
         komunikaty = new JTextArea();
         komunikaty.setLineWrap(true);
@@ -67,7 +63,6 @@ public class GameClient extends JFrame
         host = new JTextField(nazwaSerwera, 12);
         polacz = new JButton("Połącz");
         rozlacz = new JButton("Rozłącz");
-        info = new JButton("Info");
         endTurn = new JButton("End turn");
         rozlacz.setEnabled(false);
 
@@ -79,7 +74,6 @@ public class GameClient extends JFrame
 
         polacz.addActionListener(obsluga);
         rozlacz.addActionListener(obsluga);
-        info.addActionListener(obsluga);
         endTurn.addActionListener(obsluga);
 
         wiadomosc.addKeyListener(obsluga);
@@ -95,28 +89,28 @@ public class GameClient extends JFrame
             }
         });
 
-        container.add(panel);
-        container.add(handPanel);
-        container.add(currentCardPanel);
+        add(panel);
+        add(handPanel);
+        add(currentCardPanel);
 
         panel.add(new JLabel("Serwer RMI: "));
         panel.add(host);
         panel.add(polacz);
         panel.add(rozlacz);
-        panel.add(info);
         panel.add(endTurn);
 
         add(panel, BorderLayout.NORTH);
 
-        add(new JScrollPane(komunikaty), BorderLayout.CENTER);
+        add(new JScrollPane(komunikaty), BorderLayout.WEST);
+        komunikaty.setPreferredSize(new Dimension(200, 400));
         add(new JScrollPane(zalogowani), BorderLayout.EAST);
 
         add(wiadomosc, BorderLayout.SOUTH);
-        add(handPanel, BorderLayout.SOUTH);
-        add(currentCardPanel, BorderLayout.EAST);
+        add(handPanel, BorderLayout.CENTER);
+        panel.add(new JLabel("Aktualna karta: "));
+        panel.add(currentCardPanel, BorderLayout.EAST);
 
         setVisible(true);
-
     }
 
     private class ObslugaZdarzen extends KeyAdapter implements ActionListener
@@ -148,16 +142,6 @@ public class GameClient extends JFrame
                 polacz.setEnabled(true);
                 host.setEnabled(true);
             }
-            if (e.getActionCommand().equals("Info"))
-            {
-                for (Card c : hand.hand)
-                {
-                    wyswietlKomunikat(c.getSuitAsString() + " "
-                            + c.getValueAsString());
-                }
-                wyswietlKomunikat(String.valueOf(myTurn));
-                repaint();
-            }
             if (e.getActionCommand().equals("End turn"))
             {
                 try
@@ -168,6 +152,7 @@ public class GameClient extends JFrame
                     myTurn = false;
                     currentCardRefresh();
                     handRulesRefresh();
+                    serwer.listRefresh(klient);
                 } catch (RemoteException ex)
                 {
                     Logger.getLogger(GameClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -192,6 +177,7 @@ public class GameClient extends JFrame
                         myTurn = false;
                         currentCardRefresh();
                         handRulesRefresh();
+                        serwer.listRefresh(klient);
 
                     } catch (RemoteException ex)
                     {
@@ -253,9 +239,6 @@ public class GameClient extends JFrame
         Card currCard = serwer.getCurrentCard();
         switch (currCard.getValue())
         {
-            case 1:
-                serwer.drawACard(klient);
-                break;
             case 2:
                 serwer.drawACard(klient, 2);
                 serwer.setFunctionApplied(true);
@@ -263,9 +246,6 @@ public class GameClient extends JFrame
             case 3:
                 serwer.drawACard(klient, 3);
                 serwer.setFunctionApplied(true);
-                break;
-            case 11:
-                //input which value u demand for the whole round
                 break;
             case 13:
                 serwer.drawACard(klient, 5);
@@ -393,8 +373,15 @@ public class GameClient extends JFrame
         {
             try
             {
-                listaZalogowanych.addElement(n.pobierzNicka());
+                if (n.getTurn())
+                {
+                    listaZalogowanych.addElement(n.pobierzNicka() + " - THINKING..");
+                } else if(!n.getTurn())
+                {
+                    listaZalogowanych.addElement(n.pobierzNicka());
+                }
                 System.out.println(n.pobierzNicka());
+
             } catch (Exception e)
             {
                 System.out.println("Błąd: " + e);

@@ -28,4 +28,6 @@ public interface Client extends Remote
     public boolean getTurn() throws RemoteException;
 
     public void tableRefresh() throws RemoteException;
+    
+    public void listRefresh(Vector<Client> lista) throws RemoteException;
 }

@@ -26,7 +26,7 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
 
         klienci.add(n);
 
-        serwer.wyswietlKomunikat("Do czatu dołączył/a: " + n.pobierzNicka());
+        serwer.wyswietlKomunikat("Do gry dołączył/a: " + n.pobierzNicka());
         if (klienci.size() == 1)
         {
             n.changeTurn(true);
@@ -54,7 +54,7 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
 
         klienci.remove(n);
 
-        serwer.wyswietlKomunikat("Czat opuścił/a: " + n.pobierzNicka());
+        serwer.wyswietlKomunikat("Grę opuścił/a: " + n.pobierzNicka());
 
         for (Iterator<Client> i = klienci.iterator(); i.hasNext();)
         {
@@ -65,6 +65,7 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
 
     public synchronized void playACard(Client n, Card c) throws RemoteException
     {
+        serwer.deck.cardsUsed.add(serwer.currentCard);
         serwer.currentCard = c;
         for (Iterator<Client> i = klienci.iterator(); i.hasNext();)
         {
@@ -80,6 +81,11 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
 
     public synchronized void drawACard(Client n) throws RemoteException
     {
+        if (serwer.deck.cardsLeft() < 6)
+        {
+            serwer.deck.shuffleUsedCards();
+        }
+
         Card c = serwer.deck.getACard(0);
         serwer.deck.removeACard(c);
         n.drawACard(c);
@@ -87,6 +93,11 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
 
     public synchronized void drawACard(Client n, int quantity) throws RemoteException
     {
+        if (serwer.deck.cardsLeft() < 6)
+        {
+            serwer.deck.shuffleUsedCards();
+        }
+
         for (int i = 0; i < quantity; i++)
         {
             Card c = serwer.deck.getACard(0);
@@ -117,6 +128,16 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
         klienci.elementAt(0).changeTurn(true);
         klienci.elementAt(0).tableRefresh();
     }
+
+    public void listRefresh(Client n) throws RemoteException
+    {
+        for (Iterator<Client> i = klienci.iterator(); i.hasNext();)
+        {
+            Client klient = i.next();
+            klient.listRefresh(klienci);
+        }
+    }
+
     public Card getCurrentCard() throws RemoteException
     {
         return serwer.currentCard;
@@ -127,7 +148,6 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
         return serwer.functionApplied;
     }
 
-    @Override
     public void setFunctionApplied(boolean b) throws RemoteException
     {
         serwer.functionApplied = b;
