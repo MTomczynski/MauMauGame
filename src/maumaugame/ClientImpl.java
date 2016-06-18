@@ -35,6 +35,11 @@ public class ClientImpl extends UnicastRemoteObject implements Client
         klient.wyswietlKomunikat("Grę opuścił/a: " + nick);
         klient.odswiezListe(lista);
     }
+    
+    public void endOfTheGameToast(String nick) throws RemoteException
+    {
+        klient.wyswietlKomunikat("Grę wygrał: " + nick);
+    }
 
     public String pobierzNicka() throws RemoteException
     {

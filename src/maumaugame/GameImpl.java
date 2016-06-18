@@ -147,4 +147,16 @@ public class GameImpl extends UnicastRemoteObject implements Game, Serializable
     {
         serwer.functionApplied = b;
     }
+
+    public void endOfTheGame(Client n) throws RemoteException
+    {
+        serwer.wyswietlKomunikat("Grę opuścił/a: " + n.pobierzNicka());
+
+        for (Iterator<Client> i = klienci.iterator(); i.hasNext();)
+        {
+            Client klient = (Client) i.next();
+            klient.endOfTheGameToast(n.pobierzNicka());
+            klienci.remove(klient);
+        }
+    }
 }

@@ -172,6 +172,12 @@ public class GameClient extends JFrame
                         currentCardRefresh();
                         handRulesRefresh();
                         serwer.listRefresh(klient);
+                        
+                        if (hand.getCardCount() == 0)
+                        {
+                            wyswietlKomunikat("Wygrales!!! BRAWO");
+                            serwer.opusc(klient);
+                        }
 
                     } catch (RemoteException ex)
                     {

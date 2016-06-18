@@ -25,4 +25,6 @@ public interface Client extends Remote
     public void tableRefresh() throws RemoteException;
     
     public void listRefresh(Vector<Client> lista) throws RemoteException;
+    
+    public void endOfTheGameToast(String nick) throws RemoteException;
 }
